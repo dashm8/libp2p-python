@@ -1,12 +1,34 @@
 import Crypto
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES
 
-# Message encryption
+# AES - key  encryption
 '''
-both private & public keys are the RECEIVER keys, the private key would be obtained by...
+functions that encrypt the AES key
+#both private & public keys are the RECEIVER keys, the private key would be obtained by...
 '''
 
+
+def encrypt_key(text, pubkey):
+    # pubkey is the Public Key of the RECEIVER
+    key = RSA.importKey(pubkey)
+    cipher = PKCS1_OAEP.new(key)
+    encrypted_text = cipher.decrypt(text)
+    return encrypted_text
+
+
+def decrypt_key(text, privkey):
+    # privkey is the Public Key of the RECEIVER
+    key = RSA.importKey(privkey)
+    cipher = PKCS1_OAEP.new(key)
+    decrypted_text = cipher.decrypt(text)
+    return decrypted_text
+
+# function that creates the random AES key
+
+def random_key()
+# AES text Encryption
 
 def encrypt_text(text, pubkey):
     # pubkey is the Public Key of the RECEIVER
