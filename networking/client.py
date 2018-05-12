@@ -58,7 +58,8 @@ class Peer:
         self.conn = sock.connect((ip,port))
         self.id = peerid
 
-    def _makemsg(self,data):
+    def makemsg(self,data):
+
         return 
 
     def send(self,data):
