@@ -19,7 +19,7 @@ class Client:
             sock.connect(ip,port)
             self.clients[str(id)] = sock
         except Exception as e:
-            print e
+            print(e)
 
     def Route(self,peerid):
 
@@ -44,8 +44,8 @@ class Client:
 
     def SendToPeer(self,peerid,msg):
         peer = self.GetPeer(peerid)
-        if not peer
-            peer = self.Router(peer)
+        if not peer:
+            peer = self.Route(peer)
             if not peer:
                 raise PeerNotFound
         
@@ -67,7 +67,7 @@ class Peer:
     
 
 
-class PeerNotFound:
+class PeerNotFound(BaseException):
     def __str__(self):
         return "PeerNotFound Exception"
 
