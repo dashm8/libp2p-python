@@ -2,6 +2,7 @@ import Crypto
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
+from Crypto import Random
 
 # AES - key  encryption
 '''
@@ -14,35 +15,35 @@ def encrypt_key(text, pubkey):
     # pubkey is the Public Key of the RECEIVER
     key = RSA.importKey(pubkey)
     cipher = PKCS1_OAEP.new(key)
-    encrypted_text = cipher.decrypt(text)
-    return encrypted_text
+    encrypted_key = cipher.decrypt(text)
+    return encrypted_key
 
 
 def decrypt_key(text, privkey):
     # privkey is the Public Key of the RECEIVER
     key = RSA.importKey(privkey)
     cipher = PKCS1_OAEP.new(key)
-    decrypted_text = cipher.decrypt(text)
-    return decrypted_text
+    decrypted_key = cipher.decrypt(text)
+    return decrypted_key
 
-# function that creates the random AES key
 
-def random_key()
-# AES text Encryption
+# AES message Encryption
 
-def encrypt_text(text, pubkey):
+def encrypt_text(text, pubkey, key_byts=32):
     # pubkey is the Public Key of the RECEIVER
-    key = RSA.importKey(pubkey)
-    cipher = PKCS1_OAEP.new(key)
-    encrypted_text = cipher.decrypt(text)
+    key = encrypt_key(Random.get_random_bytes(32), pubkey)
+    iv = Random.new().read(AES.block_size)
+    cipher = AES.new(key, AES.MODE_CFB, iv)
+    encrypted_text = iv + cipher.encrypt(text)
     return encrypted_text
 
 
 def decrypt_text(text, privkey):
     # privkey is the Public Key of the RECEIVER
-    key = RSA.importKey(privkey)
-    cipher = PKCS1_OAEP.new(key)
-    decrypted_text = cipher.decrypt(text)
+    key = decrypt_key(Random.get_random_bytes(32), privkey)
+    iv = text[:AES.block_size]
+    cipher = AES.new(key, AES.MODE_CFB, iv)
+    decrypted_text = cipher.decrypt(text[AES.block_size:])
     return decrypted_text
 
 
