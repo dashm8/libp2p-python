@@ -21,13 +21,56 @@ class Client:
         except Exception as e:
             print e
 
-    def Route(self,id):
-        (ip,port) = self.router(id)
+    def Route(self,peerid):
+
+        (ip,port) = self.router(peerid)#should be async
         if not ip:
             return None
         return (ip,port)
 
+    def GetPeer(self,peerid):
+
+        if peerid in self.clients:
+            return self.clients[peerid]
+        return None
+
+    def GetPeers(self):
+
+        return self.clients.keys
+
+    def NumberOfPeers(self):
+
+        return len(self.clients)
+
+    def SendToPeer(self,peerid,msg):
+        peer = self.GetPeer(peerid)
+        if not peer
+            peer = self.Router(peer)
+            if not peer:
+                raise PeerNotFound
+        
+
+class Peer:
+    def __init__(self,ip,port,peerid):
+        self.ip = ip
+        self.port = port
+        sock = socket.socket()
+        self.conn = sock.connect((ip,port))
+        self.id = peerid
+
+    def _makemsg(self,data):
+        return 
+
+    def send(self,data):
+        self.conn.send(data)
+
     
+
+
+class PeerNotFound:
+    def __str__(self):
+        return "PeerNotFound Exception"
+
 
         
 
