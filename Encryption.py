@@ -1,4 +1,3 @@
-import Crypto
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
@@ -35,7 +34,7 @@ def encrypt_text(text, pubkey, key_byts=32):
     iv = Random.new().read(AES.block_size)
     cipher = AES.new(key, AES.MODE_CFB, iv)
     encrypted_text = cipher.encrypt(text)
-    encrypted_dict = {"key":key,"text":encrypted_text,"iv":iv}
+    encrypted_dict = {"key": key, "text": encrypted_text, "iv": iv}
     return encrypted_dict
 
 
