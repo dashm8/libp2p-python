@@ -34,16 +34,18 @@ def encrypt_text(text, pubkey, key_byts=32):
     key = encrypt_key(Random.get_random_bytes(32), pubkey)
     iv = Random.new().read(AES.block_size)
     cipher = AES.new(key, AES.MODE_CFB, iv)
-    encrypted_text = iv + cipher.encrypt(text)
-    return encrypted_text
+    encrypted_text = cipher.encrypt(text)
+    encrypted_dict = {"key":key,"text":encrypted_text,"iv":iv}
+    return encrypted_dict
 
 
-def decrypt_text(text, privkey):
+def decrypt_text(encrypted_dict, privkey):
     # privkey is the Public Key of the RECEIVER
-    key = decrypt_key(Random.get_random_bytes(32), privkey)
-    iv = text[:AES.block_size]
+    key = decrypt_key(encrypted_dict["key"], privkey)
+    text = encrypted_dict["text"]
+    iv = encrypted_dict["iv"]
     cipher = AES.new(key, AES.MODE_CFB, iv)
-    decrypted_text = cipher.decrypt(text[AES.block_size:])
+    decrypted_text = cipher.decrypt(text)
     return decrypted_text
 
 
