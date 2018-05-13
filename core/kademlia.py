@@ -1,32 +1,58 @@
-#this is gonna be ruff
+# this is gonna be ruff
 import hashlib
 
+
 class Peer:
-    def __init__(self,kmax,username):
-        self.id = hashlib.sha256()
-        self.RoutingTable = {}
+    def __init__(self, kmax, username):
+        '''
+
+        :param kmax: the (most of the time) fixed size of the maximum amount of peers that one peer can hold.
+        :param username: simply the peer's username, will be used in the generation of the peer's id.
+        '''
+        self.id = hashlib.sha256(username)
+        self.RoutingTable = {} # this dictionary contains the peers that this peer is connected to and their range from this peer, the format is {"hashed_peer_id":(hashed_peer_id,range from this peer)}
+        #self.RoutingTable = {}  # this dictionary contains the peers who are this peer is connected to, the format is {"hashed_peer_id":hashed_peer_id}
         self.kmax = kmax
+        self.k = 0
 
+    def get_k(self):
+        '''
 
-    def GetKsize(self):
-        return len(self.RoutingTable)
+        :return: the number of nodes this client currently has.
+        '''
+        # return len(self.RoutingTable)
+        return self.k
 
-    def GetRange(self,peeridb):
-        self.id = int(self.id,16)
-        peeridb = int(peeridb,16)
-        return self.id ^ peeridb
+    def get_range(self, peer_id):
+        '''
 
+        :param peer_id: the other peer's id
+        :return: the range from this peer to another peer
+        '''
+        my_id = int(self.id, 16)
+        peeridb = int(peer_id, 16)
+        return my_id ^ peeridb
 
+    def add_peer(self, peer_username, ):  # might be add_friend
+        '''
+
+        :param peer_username: the new peer's username
+        :return: this function doesn't return anything.
+        this function adds a new peer to the tree, is the base "Sign up" function
+        '''
+        peer_id = hashlib.sha256(peer_username)
+        self.RoutingTable[]
+        {"peer_id"}
 
 
 class Router:
     print("do stuff")
 
+
 class Utils:
 
     @staticmethod
-    def GetRange(peerida,peeridb):
-        peerida = int(peerida,16)
-        peeridb = int(peeridb,16)
+    def GetRange(peerida, peeridb):
+        peerida = int(peerida, 16)
+        peeridb = int(peeridb, 16)
         return peerida ^ peeridb
-
