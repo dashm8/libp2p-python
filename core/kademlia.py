@@ -33,7 +33,7 @@ class Peer:
         peeridb = int(peer_id, 16)
         return my_id ^ peeridb
 
-    def add_peer(self, peer_username, ):  # might be add_friend
+    def add_peer(self, peer_username):  # might be add_friend
         '''
 
         :param peer_username: the new peer's username
@@ -41,7 +41,7 @@ class Peer:
         this function adds a new peer to the tree, is the base "Sign up" function
         '''
         peer_id = hashlib.sha256(peer_username)
-        self.RoutingTable[]
+        self.RoutingTable["peer_"+str(self.k)] =
         {"peer_id"}
 
 
