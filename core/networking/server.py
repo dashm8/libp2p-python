@@ -3,20 +3,19 @@ import asyncio
 from utils import Formatter
 
 class ServerTcp:
-    def __init__(self,ip,port):
+    def __init__(self,ip,port,router):
         self.ip = ip
         self.port = port
         self.handlers = {}
+        self.router = router
+        self.apps = {}
         
     async def handle_echo(self,reader, writer=None):
         data = await reader.read(2048)
-        message = data.decode()
-        message = Formatter.DecodeJson(message)
-        print(message)
-        msgtype = message["msgtype"]
-        print(msgtype)
-        self.handlers[msgtype]()
-        print("all good")
+        data = data.decode()
+        data = Formatter.DecodeJson(data)
+        datatype = data["datatype"]
+        self.(self.handlers[datatype](data))
 
 
     def Run(self):
@@ -31,6 +30,18 @@ class ServerTcp:
         server.close()
         loop.run_until_complete(server.wait_closed())
         loop.close()
+    
+    def signup_handler(self,data):
+        RoutingTable = data["RoutingTable"]
+        self.router.peer.RoutingTable = RoutingTable
+
+    def bootstrap_handler(self,data):
+        
+
+
+    def app_handler(self,data)
+        apptype = data["apptype"]
+        apps[apptype](data)
 
     
 

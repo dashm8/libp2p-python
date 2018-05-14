@@ -1,5 +1,6 @@
 #client code
 import socket
+import datetime
 
 class Client:
 
@@ -12,12 +13,11 @@ class Client:
         self.router = router#callable function
 
 
-    def Connect(self,ip,port,id):
+    def Connect(self,endpoint,peerid):
 
         try:
-            sock = socket.socket()
-            sock.connect(ip,port)
-            self.clients[str(id)] = sock
+            conn = Conn_Handler(endpoint,peerid)
+            self.clients[str(peerid)] = conn
         except Exception as e:
             print(e)
 
@@ -48,21 +48,23 @@ class Client:
             peer = self.Route(peer)
             if not peer:
                 raise PeerNotFound
+        peer.send(msg)
+        
         
 
-class Peer:
-    def __init__(self,ip,port,peerid):
-        self.ip = ip
-        self.port = port
+class Conn_Handler:
+    def __init__(self,endpoint,peerid):
+       
         sock = socket.socket()
-        self.conn = sock.connect((ip,port))
+        self.conn = sock.connect(endpoint)
         self.id = peerid
 
-    def _makemsg(self,data):
-        return 
+    def makemsg(self,data):
+        packet = {"From":self.id,"Date":str(datetime.datetime.now())}
+        return data.update(packet)
 
     def send(self,data):
-        self.conn.send(data)
+        self.conn.send(self.makemsg(data))
 
     
 

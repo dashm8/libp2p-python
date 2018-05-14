@@ -53,13 +53,15 @@ class Router:
     def __init__(self):
         self.peer = Peer()
 
-    def bootstrap(self,endpoint_server,server_id):
-        packet = {"msgtype":"bootstrap","action":"request"}
+    def signup(self,endpoint_server,server_id):
+        packet = {"datatype":"bootstrap","action":"request"}
         self.peer.client.Connect(endpoint_server,server_id)
         self.peer.client.SendToPeer(server_id,packet)
 
+    
+
     def bootstrap_resp(self,new_peer_id,endpoint):
-        #
+        
 
 
 
