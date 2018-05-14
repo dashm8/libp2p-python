@@ -42,13 +42,24 @@ class Peer:
         self.RoutingTable[peer_id] = (endpoint,self.get_range(peer_id))
         self.k += 1
 
-    def bootstrap(self):        
+    
+
+
+
         
 
 
 class Router:
     def __init__(self):
         self.peer = Peer()
+
+    def bootstrap(self,endpoint_server,server_id):
+        packet = {"msgtype":"bootstrap","action":"request"}
+        self.peer.client.Connect(endpoint_server,server_id)
+        self.peer.client.SendToPeer(server_id,packet)
+
+    def bootstrap_resp(self,new_peer_id,endpoint):
+        #
 
 
 
