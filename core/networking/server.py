@@ -36,7 +36,7 @@ class ServerTcp:
         self.router.peer.RoutingTable = RoutingTable
 
     def bootstrap_handler(self,data):
-        
+        self.router.peer.add_peer(data["From"])
 
 
     def app_handler(self,data)
