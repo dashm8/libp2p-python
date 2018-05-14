@@ -30,8 +30,8 @@ class Peer:
         :return: the range from this peer to another peer
         '''
         my_id = int(self.id, 16)
-        peeridb = int(peer_id, 16)
-        return my_id ^ peeridb
+        peer_id = int(peer_id, 16)
+        return my_id ^ peer_id
 
     def add_peer(self, peer_username):  # might be add_friend
         '''
