@@ -31,7 +31,7 @@ class Peer:
         peeridb = int(peer_id, 16)
         return my_id ^ peeridb
 
-    def add_peer(self, peer_username,endpoint):  # might be add_friend
+    def add_peer(self, peer_id):  # might be add_friend
         '''
 
         :param peer_username: the new peer's username
@@ -39,8 +39,18 @@ class Peer:
         this function adds a new peer to the tree, is the base "Sign up" function
         '''        
         peer_id = hashlib.sha256(peer_username).hexdigest()
+        OtherRoutingTable = {}
+        for i in self.RoutingTable:
+            if i[2] > Utils.get_range(i[0],peer_id):
+                OtherRoutingTable[i[0]] = i
+            else:
+                del self.RoutingTable[i[0]]
+        return OtherRoutingTable
+
+
+
         self.RoutingTable[peer_id] = (endpoint,self.get_range(peer_id))
-        self.k += 1
+
 
     
 
@@ -72,7 +82,7 @@ class RouterProtocol:
 class Utils:
 
     @staticmethod
-    def GetRange(peerida, peeridb):
+    def get_range(peerida, peeridb):
         peerida = int(peerida, 16)
         peeridb = int(peeridb, 16)
         return peerida ^ peeridb
