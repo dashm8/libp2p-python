@@ -8,6 +8,8 @@ import hashlib
         self.port = port
         self.router = router#callable function
 '''
+
+
 class Peer:
     def __init__(self, kmax, client):
         '''
@@ -16,10 +18,12 @@ class Peer:
         '''
         self.client = client
         self.id = hashlib.sha256(client.id).hexdigest()
-        self.RoutingTable = {} # this dictionary contains the peers that this peer is connected to and their range from this peer, the format is {"hashed_peer_id":((ip,port)),range from this peer)}
-        #self.RoutingTable = {}  # this dictionary contains the peers who are this peer is connected to, the format is {"hashed_peer_id":hashed_peer_id}
+        self.RoutingTable = {}  # this dictionary contains the peers that this peer is connected to and their range from this peer, the format is {"hashed_peer_id":((ip,port)),range from this peer)}
+        # self.RoutingTable = {}  # this dictionary contains the peers who are this peer is connected to, the format is {"hashed_peer_id":hashed_peer_id}
         self.kmax = kmax
-        self.k = 0        
+        self.k = 0
+        self.ttl = 10
+
 
     def get_range(self, peer_id):
         '''
@@ -37,36 +41,106 @@ class Peer:
         :param peer_username: the new peer's username
         :return: this function doesn't return anything.
         this function adds a new peer to the tree, is the base "Sign up" function
-        '''        
-        #peer_id = hashlib.sha256(peer_username).hexdigest() wrong
+        '''
+        # peer_id = hashlib.sha256(peer_username).hexdigest() wrong
         OtherRoutingTable = {}
         for i in self.RoutingTable:
-            if i[2] > Utils.get_range(i[0],peer_id):           #i[2] == range of another peer from this peer
-                OtherRoutingTable[i[0]] = i                    # adding the peer to the new peer's Routing table
-                del self.RoutingTable[i[0]]                    # deleting the added peer from this peer's Routing table
-                
+            if i[2] > Utils.get_range(i[0], peer_id):  # i[2] == range of another peer from this peer
+                OtherRoutingTable[i[0]] = i  # adding the peer to the new peer's Routing table
+                del self.RoutingTable[i[0]]  # deleting the added peer from this peer's Routing table
+
         return OtherRoutingTable
 
+    def closest_to_peer(self, peer_id):
+        range = 915792089237316195423570985008687907853269984665640564039457584007913129639936
+        # 2^256 with 9 at the start instead of 1
+        for i in self.RoutingTable.keys():
+            range1 = Utils.get_range(i, peer_id)
+            if range1 < range:
+                peer = i
+                range = range1
+        return self.RoutingTable[peer]
 
+########################################################################################################################
 class Router:
     def __init__(self):
         self.peer = Peer()
 
-    def signup(self,endpoint_server,server_id):
-        packet = {"datatype":"bootstrap","action":"request"}
-        self.peer.client.Connect(endpoint_server,server_id)
-        self.peer.client.SendToPeer(server_id,packet)
+    def signup(self, endpoint_server, server_id):
+        '''
 
-    
+        :param endpoint_server: the signing up peer's endpoint
+        :param server_id: the signing up peer's id
+        :return: void
+        '''
+        packet = {"datatype": "bootstrap", "action": "request"}
+        self.peer.client.Connect(endpoint_server, server_id)
+        self.peer.client.SendToPeer(server_id, packet)
 
-    def bootstrap_resp(self,new_peer_id,endpoint,RoutingTable):
-        self.peer.RoutingTable[new_peer_id] = (endpoint,self.peer.get_range(new_peer_id))
-        packet = {"datatype":"signup","RoutingTable":RoutingTable}
-        self.peer.Connect(endpoint,new_peer_id)
-        self.peer.SendToPeer(new_peer_id,packet)
-        
+    ####################################################################################################################
+    def ping(self, peer_id):
+        '''
 
+        :param peer_id: the "pinged" peer's id
+        :return: void
+        '''
+        packet = {"datatype": "ping", "action": "request"}
+        self.peer.client.SendToPeer(peer_id, packet)
 
+    def ping_reply(self, data):
+        '''
+
+        :param data: contains the info of the requester
+        :return:
+        '''
+        packet = {"datatype": "ping", "action": "reply"}
+        self.peer.client.SendToPeer(data["From"], packet)
+
+    ####################################################################################################################
+    def bootstrap_resp(self, new_peer_id, endpoint, RoutingTable):
+        self.peer.RoutingTable[new_peer_id] = (endpoint, self.peer.get_range(new_peer_id))
+        packet = {"datatype": "signup", "RoutingTable": RoutingTable}
+        self.peer.Connect(endpoint, new_peer_id)
+        self.peer.SendToPeer(new_peer_id, packet)
+
+    ####################################################################################################################
+    def start_search(self, peer_id):
+        if peer_id in self.peer.RoutingTable.keys():
+            return self.peer.RoutingTable[peer_id]
+        else:
+            init_search_peer(self, peer_id)
+
+    def init_search_peer(self, peer_id):
+        '''
+        handler needed - redirects the search
+        :param peer_id: the searched peer's id
+        :return: void
+        '''
+        peer = self.peer.closest_to_peer(peer_id)
+        packet = {"datatype": "findpeer", "action": "init", "ttl": self.peer.ttl, "peer_id": peer_id,
+                  "searcher_id": self.peer.id}
+        self.peer.client.SendToPeer(peer, packet)
+
+    def redirect_search_peer(self, data):
+        '''
+        handler needed - redirects the search
+        :param data:
+        :return:
+        '''
+        if peer_id in self.peer.RoutingTable.keys():
+            packet = {"datatype": "findpeer", "action": "found", "ttl": data["ttl"] - 1, "peer_id": data["peer_id"]}
+            self.peer.client.SendToPeer(data["searcher_id"], packet)
+        else:
+            if data["ttl"] > 0:
+                packet = {"datatype": "searchpeer", "action": "search", "searcher_id": data["searcher_id"],
+                          "ttl": data["ttl"] - 1, "peer_id": data["peer_id"]}
+                peer = self.peer.closest_to_peer(data["peer_id"])
+                self.peer.client.SendToPeer(peer, packet)
+            else:
+                packet = {"datatype": "searchpeer", "action": "end", "searcher_id": data["searcher_id"],
+                          "peer_id": data["peer_id"]}
+                self.peer.client.SendToPeer(data["searcher_id"], packet)
+    ####################################################################################################################
 
 class RouterProtocol:
     print("do stuff")
@@ -79,6 +153,8 @@ class Utils:
         peerida = int(peerida, 16)
         peeridb = int(peeridb, 16)
         return peerida ^ peeridb
+
+
 '''
 death signal -> temp table
 ping
