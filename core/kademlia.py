@@ -38,13 +38,12 @@ class Peer:
         :return: this function doesn't return anything.
         this function adds a new peer to the tree, is the base "Sign up" function
         '''        
-        peer_id = hashlib.sha256(peer_username).hexdigest()
+        #peer_id = hashlib.sha256(peer_username).hexdigest() wrong
         OtherRoutingTable = {}
         for i in self.RoutingTable:
-            if i[2] > Utils.get_range(i[0],peer_id):
-                OtherRoutingTable[i[0]] = i
-            else:
-                del self.RoutingTable[i[0]]
+            if i[2] > Utils.get_range(i[0],peer_id):           #i[2] == range of another peer from this peer
+                OtherRoutingTable[i[0]] = i                    # adding the peer to the new peer's Routing table
+                del self.RoutingTable[i[0]]                    # deleting the added peer from this peer's Routing table
         return OtherRoutingTable
 
 

@@ -32,16 +32,28 @@ class ServerTcp:
         loop.close()
     
     def signup_handler(self,data):
+        '''
+
+        :param data: the returned data from the add_peer function that is in the peer class.
+        :return: void
+        setting up the new peer's Routing table
+        '''
         RoutingTable = data["RoutingTable"]
         self.router.peer.RoutingTable = RoutingTable
 
     def bootstrap_handler(self,data):
+        '''
+
+        :param data: contains the data for requesting bootstrap
+        :return: void - leads to the creation of the new user's routing table
+        '''
         self.router.peer.add_peer(data["From"])
 
 
-    def app_handler(self,data)
+    def app_handler(self,data):
+
         apptype = data["apptype"]
-        apps[apptype](data)
+        self.apps[apptype](data)
 
     
 
