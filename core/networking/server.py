@@ -66,13 +66,13 @@ class ServerTcp:
     def search_handler(self, data):
         action = data["action"]
         if action == "found":
-            print("found") #need to add what to do with it
+            self.router.peer.client.PreformTask(data["peer_id"],data["endpoint"])
         if action == "init":
             self.router.redirect_search_peer(data)
         if action == "search":
             self.router.redirect_search_peer(data)
         if action == "end":
-            print("to be added")
+            self.router.peer.client.CancelTask(data["peer_id"])
 
 
 ########################################################################################################################

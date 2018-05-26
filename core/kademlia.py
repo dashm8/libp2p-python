@@ -106,7 +106,7 @@ class Router:
     ####################################################################################################################
     def start_search(self, peer_id):
         if peer_id in self.peer.RoutingTable.keys():
-            return self.peer.RoutingTable[peer_id]
+            self.peer.client.PreformTask(peer_id,self.peer.RoutingTable[peer_id][0])
         else:
             init_search_peer(self, peer_id)
 
@@ -128,7 +128,8 @@ class Router:
         :return:
         '''
         if peer_id in self.peer.RoutingTable.keys():
-            packet = {"datatype": "findpeer", "action": "found", "ttl": data["ttl"] - 1, "peer_id": data["peer_id"]}
+            packet = {"datatype": "findpeer", "action": "found", "ttl": data["ttl"] - 1, "peer_id": data["peer_id"],
+            "endpoint":self.peer.RoutingTable["peer_id"][0]}
             self.peer.client.SendToPeer(data["searcher_id"], packet)
         else:
             if data["ttl"] > 0:
