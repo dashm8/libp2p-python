@@ -47,7 +47,9 @@ class ServerTcp:
         :param data: contains the data for requesting bootstrap
         :return: void - leads to the creation of the new user's routing table
         '''
-        self.router.peer.add_peer(data["From"])
+        RoutingTable = self.router.peer.add_peer(data["From"])
+        self.router.bootstrap_resp(data["From"],data["endpoint"],RoutingTable)
+
 
 
     def app_handler(self,data):

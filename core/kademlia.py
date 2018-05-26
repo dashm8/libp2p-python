@@ -44,18 +44,8 @@ class Peer:
             if i[2] > Utils.get_range(i[0],peer_id):           #i[2] == range of another peer from this peer
                 OtherRoutingTable[i[0]] = i                    # adding the peer to the new peer's Routing table
                 del self.RoutingTable[i[0]]                    # deleting the added peer from this peer's Routing table
+                
         return OtherRoutingTable
-
-
-
-        self.RoutingTable[peer_id] = (endpoint,self.get_range(peer_id))
-
-
-    
-
-
-
-        
 
 
 class Router:
@@ -69,7 +59,11 @@ class Router:
 
     
 
-    def bootstrap_resp(self,new_peer_id,endpoint):
+    def bootstrap_resp(self,new_peer_id,endpoint,RoutingTable):
+        self.peer.RoutingTable[new_peer_id] = (endpoint,self.peer.get_range(new_peer_id))
+        packet = {"datatype":"signup","RoutingTable":RoutingTable}
+        self.peer.Connect(endpoint,new_peer_id)
+        self.peer.SendToPeer(new_peer_id,packet)
         
 
 

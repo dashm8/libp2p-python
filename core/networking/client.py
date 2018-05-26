@@ -6,17 +6,17 @@ class Client:
 
 
     def __init__(self,clients,id,router,ip="127.0.0.1",port=4444):
-        self.clients = clients#dict {id:(conn)}
+        self.clients = clients#dict {id:(conn_Handler)}
         self.id = id
         self.ip = ip
-        self.port = port
+        self.port = int(port)
         self.router = router#callable function
 
 
     def Connect(self,endpoint,peerid):
 
         try:
-            conn = Conn_Handler(endpoint,peerid)
+            conn = Conn_Handler(endpoint,peerid,(self.ip,self.port))
             self.clients[str(peerid)] = conn
         except Exception as e:
             print(e)
@@ -53,14 +53,14 @@ class Client:
         
 
 class Conn_Handler:
-    def __init__(self,endpoint,peerid):
+    def __init__(self,endpoint,peerid,myendpoint):
        
         sock = socket.socket()
         self.conn = sock.connect(endpoint)
         self.id = peerid
 
     def makemsg(self,data):
-        packet = {"From":self.id,"Date":str(datetime.datetime.now())}
+        packet = {"From":self.id,"Date":str(datetime.datetime.now()),"endpoint":myendpoint}
         return data.update(packet)
 
     def send(self,data):
