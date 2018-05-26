@@ -66,12 +66,13 @@ class ServerTcp:
     def search_handler(self, data):
         action = data["action"]
         if action == "found":
-
+            print("found") #need to add what to do with it
         if action == "init":
-
+            self.router.redirect_search_peer(data)
         if action == "search":
-
+            self.router.redirect_search_peer(data)
         if action == "end":
+            print("to be added")
 
 
 ########################################################################################################################
