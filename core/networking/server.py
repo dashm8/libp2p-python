@@ -16,7 +16,7 @@ class ServerTcp:
         data = data.decode()
         data = Formatter.DecodeJson(data)
         datatype = data["datatype"]
-        self.(self.handlers[datatype](data))
+        self.handlers[datatype](data)
 
     def Run(self):
         loop = asyncio.get_event_loop()
@@ -77,6 +77,14 @@ class ServerTcp:
 
 ########################################################################################################################
 
+    def store_hander(self,data):
+        action = data["action"]
+        if action == "store":
+            self.router.recv_store(data)
+
+
+
+########################################################################################################################
     def app_handler(self, data):
 
         apptype = data["apptype"]

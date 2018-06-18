@@ -16,10 +16,10 @@ class Client:
         self.tasks = {}#peerid:msg
             
     def CancelTask(self,peer_id):
-        del tasks[peer_id]
+        del self.tasks[peer_id]
 
     def PreformTask(self,peer_id,endpoint):
-        msg = tasks[peer_id]
+        msg = self.tasks[peer_id]
         self.Connect(endpoint,peer_id)
         self.SendToPeer(peer_id,msg)
         del self.tasks[peer_id]
@@ -36,13 +36,6 @@ class Client:
     def DeleteConnection(self,peer_id):
         self.clients[peer_id].close_connection()
         del self.clients[peer_id]
-
-    def Route(self, peerid):
-
-        (ip, port) = self.router(peerid)  # should be async
-        if not ip:
-            return None
-        return (ip, port)
 
     def GetPeer(self, peerid):
 
@@ -71,9 +64,10 @@ class Conn_Handler:
         sock = socket.socket()
         self.conn = sock.connect(endpoint)
         self.id = peer_id
+        self.endpoint = myendpoint #tuple of (ip,port)
 
     def makemsg(self, data):
-        packet = {"From": self.id, "Date": str(datetime.datetime.now()), "endpoint": myendpoint}
+        packet = {"From": self.id, "Date": str(datetime.datetime.now()), "endpoint": self.endpoint}
         return data.update(packet)
 
     def send(self, data):

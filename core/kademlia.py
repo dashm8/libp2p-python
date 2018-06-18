@@ -59,12 +59,12 @@ class Peer:
             if range1 < range:
                 peer = i
                 range = range1
-        return self.RoutingTable[peer]
+        return peer #peer id
 
 ########################################################################################################################
 class Router:
-    def __init__(self):
-        self.peer = Peer()
+    def __init__(self,kmax,client):
+        self.peer = Peer(kmax,client)
 
     def signup(self, endpoint_server, server_id):
         '''
@@ -100,15 +100,15 @@ class Router:
     def bootstrap_resp(self, new_peer_id, endpoint, RoutingTable):
         self.peer.RoutingTable[new_peer_id] = (endpoint, self.peer.get_range(new_peer_id))
         packet = {"datatype": "signup", "RoutingTable": RoutingTable}
-        self.peer.Connect(endpoint, new_peer_id)
-        self.peer.SendToPeer(new_peer_id, packet)
+        self.peer.client.Connect(endpoint, new_peer_id)
+        self.peer.client.SendToPeer(new_peer_id, packet)
 
     ####################################################################################################################
     def start_search(self, peer_id):
         if peer_id in self.peer.RoutingTable.keys():
             self.peer.client.PreformTask(peer_id,self.peer.RoutingTable[peer_id][0])
         else:
-            init_search_peer(self, peer_id)
+            self.init_search_peer(peer_id)
 
     def init_search_peer(self, peer_id):
         '''
@@ -127,6 +127,7 @@ class Router:
         :param data:
         :return:
         '''
+        peer_id = data["peer_id"]
         if peer_id in self.peer.RoutingTable.keys():
             packet = {"datatype": "findpeer", "action": "found", "ttl": data["ttl"] - 1, "peer_id": data["peer_id"],
             "endpoint":self.peer.RoutingTable["peer_id"][0]}
@@ -143,8 +144,27 @@ class Router:
                 self.peer.client.SendToPeer(data["searcher_id"], packet)
     ####################################################################################################################
 
-class RouterProtocol:
-    print("do stuff")
+    def store(self,peer_id,endpoint):
+        recv_peer = self.peer.closest_to_peer(peer_id)
+        packet = {"datatype":"store","action":"store","peer_id":peer_id,"ttl":self.peer.ttl,"endpoint":endpoint}
+        self.peer.client.SendToPeer(recv_peer,packet)
+
+    def recv_store(self,data):
+        to_store_id = data["peer_id"]
+        range_from_me = self.peer.get_range(to_store_id)
+        replace_id = self.peer.closest_to_peer(to_store_id)
+        range_from_replace = self.peer.RoutingTable[replace_id][1]
+        if range_from_me > range_from_replace:
+            if data['ttl'] == 0:
+                return            
+            packet = {"datatype":"store","action":"store","peer_id":to_store_id,"ttl":data['ttl']-1,
+                "endpoint":data["endpoint"]}
+            self.peer.client.SendToPeer(replace_id,packet)
+        else:
+            self.peer.RoutingTable[to_store_id] = (data["endpoint"],range_from_me)
+
+    
+
 
 
 class Utils:
@@ -162,6 +182,6 @@ ping
 store
 add
 divide
-updatek
+update
 bootstrap
 '''
