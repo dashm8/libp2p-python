@@ -1,14 +1,15 @@
 # server code
 import asyncio
-from utils import Formatter
+from .utils import Formatter
 
 
 class ServerTcp:
     def __init__(self, ip, port, router):
         self.ip = ip
         self.port = port
-        self.handlers = {}
-        self.router = router
+        self.handlers = {"signup":self.signup_handler,"bootstrap":self.bootstrap_handler,"ping":self.ping_handler,
+            "search":self.search_handler,"store":self.store_hander,"app":self.app_handler}
+        self.router = router        
         self.apps = {}
 
     async def handle_echo(self, reader, writer=None):
@@ -30,6 +31,7 @@ class ServerTcp:
         server.close()
         loop.run_until_complete(server.wait_closed())
         loop.close()
+
 ########################################################################################################################
     def signup_handler(self, data):
         '''
@@ -76,7 +78,6 @@ class ServerTcp:
 
 
 ########################################################################################################################
-
     def store_hander(self,data):
         action = data["action"]
         if action == "store":

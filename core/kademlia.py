@@ -17,7 +17,8 @@ class Peer:
         :param username: simply the peer's username, will be used in the generation of the peer's id.
         '''
         self.client = client
-        self.id = hashlib.sha256(client.id).hexdigest()
+        hs_object= hashlib.sha256(client.id.encode())
+        self.id = hs_object.hexdigest()
         self.RoutingTable = {}  # this dictionary contains the peers that this peer is connected to and their range from this peer, the format is {"hashed_peer_id":((ip,port)),range from this peer)}
         # self.RoutingTable = {}  # this dictionary contains the peers who are this peer is connected to, the format is {"hashed_peer_id":hashed_peer_id}
         self.kmax = kmax
@@ -35,7 +36,7 @@ class Peer:
         peeridb = int(peer_id, 16)
         return my_id ^ peeridb
 
-    def add_peer(self, peer_id):  # might be add_friend
+    def add_peer(self, peer_id): 
         '''
 
         :param peer_username: the new peer's username
@@ -68,7 +69,6 @@ class Router:
 
     def signup(self, endpoint_server, server_id):
         '''
-
         :param endpoint_server: the signing up peer's endpoint
         :param server_id: the signing up peer's id
         :return: void
@@ -162,9 +162,6 @@ class Router:
             self.peer.client.SendToPeer(replace_id,packet)
         else:
             self.peer.RoutingTable[to_store_id] = (data["endpoint"],range_from_me)
-
-    
-
 
 
 class Utils:

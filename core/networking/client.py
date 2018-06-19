@@ -3,14 +3,11 @@ import socket
 import datetime
 
 
-
-
-
 class Client:
 
-    def __init__(self, clients, id, router, ip="127.0.0.1", port=4444):
-        self.clients = clients  # dict {id:(conn_Handler)}
-        self.id = id
+    def __init__(self, myid,ip="127.0.0.1", port=4444):
+        self.clients = {}  # dict {id:(conn_Handler)}
+        self.id = myid
         self.ip = ip
         self.port = int(port)                
         self.tasks = {}#peerid:msg
