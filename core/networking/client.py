@@ -1,7 +1,9 @@
 # client code
 import socket
 import datetime
-
+from .utils import Formatter
+from .encryption import Encryption
+from .peer import PeerInfo
 
 class Client:
 
@@ -11,6 +13,7 @@ class Client:
         self.ip = ip
         self.port = int(port)                
         self.tasks = {}#peerid:msg
+        self.enc = Encryption()
             
     def CancelTask(self,peer_id):
         del self.tasks[peer_id]
@@ -21,11 +24,11 @@ class Client:
         self.SendToPeer(peer_id,msg)
         del self.tasks[peer_id]
 
-    def Connect(self, endpoint, peer_id):
+    def Connect(self, endpoint, peer_id,pubk=None):
         if peer_id in self.clients:
             return
         try:
-            conn = Conn_Handler(endpoint, peer_id, (self.ip, self.port))
+            conn = Conn_Handler(endpoint, peer_id, (self.ip, self.port), self.enc, pubk)
             self.clients[str(peer_id)] = conn
         except Exception as e:
             print(e)
@@ -57,15 +60,23 @@ class Client:
 
 
 class Conn_Handler:
-    def __init__(self, endpoint, peer_id, myendpoint):
+    def __init__(self, endpoint, peer_id, myendpoint,enc,pubk=None):
         sock = socket.socket()
         self.conn = sock.connect(endpoint)
         self.id = peer_id
         self.endpoint = myendpoint #tuple of (ip,port)
+        self.enc = enc
+        self.hispubk = pubk
 
     def makemsg(self, data):
         packet = {"From": self.id, "Date": str(datetime.datetime.now()), "endpoint": self.endpoint}
-        return data.update(packet)
+        if self.hispubk:
+            data = Formatter.EncodeJson(data)
+            packet.update(self.enc.encrypt(data,self.hispubk))        
+            return Formatter.EncodeJson(packet)
+        else:
+            data.update({"pubk":self.enc.pubkey,"pubsig":self.enc.pubsig})
+            return Formatter.EncodeJson(data.update(packet))
 
     def send(self, data):
         self.conn.send(self.makemsg(data))

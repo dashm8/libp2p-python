@@ -9,6 +9,14 @@ import hashlib
         self.router = router#callable function
 '''
 
+#client object that holds all relevent data about that peer
+class PeerInfo:
+    def __init__(self,endpoint,peer_id,pubk,pubsig,dist):
+        self.endpoint = endpoint
+        self.peer_id = peer_id
+        self.pubk = pubk
+        self.pubsig = pubsig
+        self.dist = dist
 
 class Peer:
     def __init__(self, kmax, client):
@@ -67,14 +75,15 @@ class Router:
     def __init__(self,kmax,client):
         self.peer = Peer(kmax,client)
 
-    def signup(self, endpoint_server, server_id):
+    def signup(self, endpoint_server, server_id, pubk):
         '''
         :param endpoint_server: the signing up peer's endpoint
         :param server_id: the signing up peer's id
+        :param servers public key
         :return: void
         '''
         packet = {"datatype": "bootstrap", "action": "request"}
-        self.peer.client.Connect(endpoint_server, server_id)
+        self.peer.client.Connect(endpoint_server, server_id,pubk)
         self.peer.client.SendToPeer(server_id, packet)
 
     ####################################################################################################################
@@ -163,6 +172,8 @@ class Router:
         else:
             self.peer.RoutingTable[to_store_id] = (data["endpoint"],range_from_me)
 
+    ##################################################################################################################
+        
 
 class Utils:
 

@@ -4,13 +4,14 @@ from .utils import Formatter
 
 
 class ServerTcp:
-    def __init__(self, ip, port, router):
+    def __init__(self, ip, port, router,enc):
         self.ip = ip
         self.port = port
         self.handlers = {"signup":self.signup_handler,"bootstrap":self.bootstrap_handler,"ping":self.ping_handler,
             "search":self.search_handler,"store":self.store_hander,"app":self.app_handler}
         self.router = router        
         self.apps = {}
+        self.enc = enc
 
     async def handle_echo(self, reader, writer=None):
         data = await reader.read(2048)
@@ -90,3 +91,9 @@ class ServerTcp:
 
         apptype = data["apptype"]
         self.apps[apptype](data)
+
+    def encryption_handler(self,data):
+        clear = self.enc.decrypt(data)
+        clear = Formatter.DecodeJson(clear)
+        datatype = clear["datatype"]
+        self.handlers[datatype](clear)

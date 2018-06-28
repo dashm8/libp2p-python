@@ -4,6 +4,5 @@ import kademlia
 
 clt = Client("username")
 kad = kademlia.Router(10,clt)
-srv = ServerTcp('0.0.0.0',4444,kad)
+srv = ServerTcp('0.0.0.0',4444,kad,None)
 srv.Run()
-print("done")

@@ -1,1 +1,3 @@
 asycnio
+ecdsa https://github.com/warner/python-ecdsa.git
+pycrypto https://github.com/dlitz/pycrypto.git
