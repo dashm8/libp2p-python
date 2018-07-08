@@ -66,18 +66,7 @@ class Peer:
 class Router:
     def __init__(self,kmax,client):
         self.peer = Peer(kmax,client)
-
-    def signup(self, endpoint_server, server_id, pubk):
-        '''
-        :param endpoint_server: the signing up peer's endpoint
-        :param server_id: the signing up peer's id
-        :param servers public key
-        :return: void
-        '''
-        packet = {"datatype": "bootstrap", "action": "request"}
-        self.peer.client.Connect(endpoint_server, server_id,pubk)
-        self.peer.client.SendToPeer(server_id, packet)
-
+    
     ####################################################################################################################
     def ping(self, peer_id):
         '''
@@ -98,13 +87,30 @@ class Router:
         self.peer.client.SendToPeer(data["From"], packet)
 
     ####################################################################################################################
+    def bootstrap_req(self, endpoint_server, server_id, pubk):        
+        packet = {"datatype": "bootstrap", "action": "request"}
+        self.peer.client.Connect(endpoint_server, server_id,pubk)
+        self.peer.client.SendToPeer(server_id, packet)
+
     def bootstrap_resp(self, data, RoutingTable):
         self.peer.RoutingTable[data["From"]] = PeerInfo(data["endpoint"],data["From"],data["pubk"],data["pubsig"])
-        packet = {"datatype": "signup", "RoutingTable": RoutingTable}
+        packet = {"datatype": "bootstrap","action": "response", "RoutingTable": RoutingTable}
         self.peer.client.Connect(data["endpoint"], data["From"])
         self.peer.client.SendToPeer(data["From"], packet)
 
-    #def bootstrap_red(self,)todo
+    def bootstrap_red(self,data,newpeer):
+        packet = {"datatype": "bootstrap","action": "redirect","peer_id":data["From"],"peer_pubk":data["pubk"],
+            "peer_pubsig":data["pubsig"],"peer_endpoint":data["endpoint"]}
+        self.peer.client.SendToPeer(newpeer,packet)
+
+    def bootstrap_resp_red(self,data,RoutingTable):
+        self.peer.RoutingTable[data["peer_id"]] = PeerInfo(data["peer_endpoint"],data["peer_id"]
+            ,data["peer_pubk"],data["peer_pubsig"])
+        packet = {"datatype": "bootstrap","action": "response", "RoutingTable": RoutingTable}
+        self.peer.client.Connect(data["peer_endpoint"], data["peer_id"])
+        self.peer.client.SendToPeer(data["peer_id"], packet)
+
+
 
     ####################################################################################################################
     def start_search(self, peer_id):

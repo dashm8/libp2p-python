@@ -8,7 +8,7 @@ from .peer import PeerInfo
 class Client:
 
     def __init__(self, myid,ip="127.0.0.1", port=4444):
-        self.clients = {}  # dict {id:(conn_Handler)}
+        self.clients = {}  # dict {id:(PeerInfo,Conn_Handler)}
         self.id = myid
         self.ip = ip
         self.port = int(port)                
@@ -24,17 +24,24 @@ class Client:
         self.SendToPeer(peer_id,msg)
         del self.tasks[peer_id]
 
-    def Connect(self, endpoint, peer_id,pubk=None):
-        if peer_id in self.clients:
+    def Connect(self, endpoint, peer_id,pubk=None,pubsig=None):
+        if peer_id in self.clients && self.clients[peer_id][1]:
             return
         try:
-            conn = Conn_Handler(endpoint, peer_id, (self.ip, self.port), self.enc, pubk)
-            self.clients[str(peer_id)] = conn
+            conn = Conn_Handler(endpoint, peer_id, (self.ip, self.port), self.enc, pubk)            
+            peer_info = PeerInfo(endpoint,peer_id,pubk,pubsig)
+            self.clients[str(peer_id)] = (peer_info,conn)
         except Exception as e:
             print(e)
 
+    def AddClient(self,endpoint,peer_id,pubk,pubsig):
+        peer_info = PeerInfo(endpoint,peer_id,pubk,pubsig)        
+        self.clients[peer_info.peer_id] = (peer_info,_)
+
+
+
     def DeleteConnection(self,peer_id):
-        self.clients[peer_id].close_connection()
+        self.clients[peer_id][1].close_connection()
         del self.clients[peer_id]
 
     def GetPeer(self, peerid):
@@ -52,7 +59,7 @@ class Client:
         return len(self.clients)
 
     def SendToPeer(self, peer_id, msg):
-        peer = self.GetPeer(peer_id)
+        peer = self.GetPeer(peer_id)[1]
         if not peer:
             self.tasks[peer_id] = msg
             return

@@ -34,24 +34,28 @@ class ServerTcp:
         loop.close()
 
 ########################################################################################################################
-    def signup_handler(self, data):
-        '''
-
-        :param data: the returned data from the add_peer function that is in the peer class.
-        :return: void
-        setting up the new peer's Routing table
-        '''
-        RoutingTable = data["RoutingTable"]
-        self.router.peer.RoutingTable = RoutingTable
-
     def bootstrap_handler(self, data):
         '''
-
         :param data: contains the data for requesting bootstrap
         :return: void - leads to the creation of the new user's routing table
         '''
-        RoutingTable = self.router.peer.add_peer(data["From"])
-        self.router.bootstrap_resp(data["From"], data["endpoint"], RoutingTable)
+        action = data["action"]
+        if action == "request":            
+            peer = data["peer_id"]
+            range_from_peer = self.router.peer.get_range(peer)
+            new_peer = self.router.peer.closest_to_peer(peer)
+            range_from_new_peer = self.router.peer.get_range(new_peer)
+            if range_from_new_peer < range_from_peer:
+                self.router.bootstrap_red(data,new_peer)
+            else:
+                RoutingTable = self.router.peer.add_peer(data["From"])
+                self.router.bootstrap_resp(data,RoutingTable)
+        elif action == "response":
+            RoutingTable = data["RoutingTable"]
+            self.router.peer.RoutingTable = RoutingTable
+        elif action == "redirect":
+            RoutingTable = self.router.peer.add_peer(data["peer_id"])
+            self.router.bootstrap_resp_red(data,RoutingTable)
 
 ########################################################################################################################
     def ping_handler(self, data):
@@ -63,7 +67,8 @@ class ServerTcp:
         if data["action"] == "request":
             self.router.ping_reply(data)
         else:
-            print(data["From"] + "is alive")
+            print(data["From"] + " is alive")
+            self.client.AddClient(data["endpoint"],data["From"],data["pubk"],data["pubsig"])
 
 ########################################################################################################################
     def search_handler(self, data):
