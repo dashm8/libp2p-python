@@ -8,7 +8,8 @@ class ServerTcp:
         self.ip = ip
         self.port = port
         self.handlers = {"signup":self.signup_handler,"bootstrap":self.bootstrap_handler,"ping":self.ping_handler,
-            "search":self.search_handler,"store":self.store_hander,"app":self.app_handler}
+            "search":self.search_handler,"store":self.store_hander,"app":self.app_handler,
+            "encrypted":self.encryption_handler}
         self.router = router        
         self.apps = {}
         self.enc = enc

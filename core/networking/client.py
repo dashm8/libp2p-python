@@ -7,13 +7,13 @@ from .peer import PeerInfo
 
 class Client:
 
-    def __init__(self, myid,ip="127.0.0.1", port=4444):
+    def __init__(self, myid,ip="127.0.0.1", port=4444,enc):
         self.clients = {}  # dict {id:(PeerInfo,Conn_Handler)}
         self.id = myid
         self.ip = ip
         self.port = int(port)                
         self.tasks = {}#peerid:msg
-        self.enc = Encryption()
+        self.enc = enc
             
     def CancelTask(self,peer_id):
         del self.tasks[peer_id]
@@ -28,16 +28,18 @@ class Client:
         if peer_id in self.clients && self.clients[peer_id][1]:
             return
         try:
-            conn = Conn_Handler(endpoint, peer_id, (self.ip, self.port), self.enc, pubk)            
-            peer_info = PeerInfo(endpoint,peer_id,pubk,pubsig)
-            self.clients[str(peer_id)] = (peer_info,conn)
+            if peer_id in self.clients:
+                self.clients[peer_id][1] = Conn_Handler(endpoint, peer_id, (self.ip, self.port), self.enc, pubk)
+            else:
+                conn = Conn_Handler(endpoint, peer_id, (self.ip, self.port), self.enc, pubk)              
+                peer_info = PeerInfo(endpoint,peer_id,pubk,pubsig)            
+                self.clients[str(peer_id)] = (peer_info,conn)
         except Exception as e:
             print(e)
 
     def AddClient(self,endpoint,peer_id,pubk,pubsig):
         peer_info = PeerInfo(endpoint,peer_id,pubk,pubsig)        
-        self.clients[peer_info.peer_id] = (peer_info,_)
-
+        self.clients[peer_info.peer_id] = (peer_info,Conn_Handler(endpoint,peer_id,(self.ip,self.port),self.enc),pubk)
 
 
     def DeleteConnection(self,peer_id):

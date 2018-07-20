@@ -2,7 +2,7 @@ import hashlib
 from .utils import Formatter
 
 class PeerInfo:
-    def __init__(self,endpoint,peer_id,pubk,pubsig,dist):
+    def __init__(self,endpoint,peer_id,pubk,pubsig):
         self.endpoint = endpoint
         self.peer_id = peer_id
         self.pubk = pubk
