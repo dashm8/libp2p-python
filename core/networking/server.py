@@ -1,38 +1,46 @@
 # server code
-import asyncio
+import socket
 from .utils import Formatter
+import threading
+from time import sleep
 
 
 class ServerTcp:
     def __init__(self, ip, port, router,enc):
         self.ip = ip
         self.port = port
-        self.handlers = {"signup":self.signup_handler,"bootstrap":self.bootstrap_handler,"ping":self.ping_handler,
+        #init socket
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind((self.ip, self.port))
+        #init handlers
+        self.handlers = {"bootstrap":self.bootstrap_handler,"ping":self.ping_handler,
             "search":self.search_handler,"store":self.store_hander,"app":self.app_handler,
             "encrypted":self.encryption_handler}
         self.router = router        
         self.apps = {}
         self.enc = enc
+        self.flag = True
 
-    async def handle_echo(self, reader, writer=None):
-        data = await reader.read(2048)
-        data = data.decode()
-        data = Formatter.DecodeJson(data)
-        datatype = data["datatype"]
-        self.handlers[datatype](data)
+    def listen(self):
+        self.sock.listen(5)
+        print("server is runing on port: " + str(self.port))
+        while self.flag:
+            client,_ = self.sock.accept()
+            client.settimeout(30)
+            threading.Thread(target=self.handle,args=client)
 
-    def Run(self):
-        loop = asyncio.get_event_loop()
-        coro = asyncio.start_server(self.handle_echo, self.ip, self.port, loop=loop)
-        server = loop.run_until_complete(coro)
-        print('Serving on {}'.format(server.sockets[0].getsockname()))
-        try:
-            loop.run_forever()
-        except KeyboardInterrupt:
-            pass
-        server.close()
-        loop.run_until_complete(server.wait_closed())
-        loop.close()
+    def handle(self,client):
+        while self.flag:
+            try:
+                data = client.recv(2048)
+                data = Formatter.DecodeJson(data)
+                datatype = data["datatype"]
+                self.handlers[datatype](data)
+                sleep(0.5)
+            except Exception:
+                client.close()
+
 
 ########################################################################################################################
     def bootstrap_handler(self, data):
@@ -69,7 +77,7 @@ class ServerTcp:
             self.router.ping_reply(data)
         else:
             print(data["From"] + " is alive")
-            self.client.AddClient(data["endpoint"],data["From"],data["pubk"],data["pubsig"])
+            self.router.client.AddClient(data["endpoint"],data["From"],data["pubk"],data["pubsig"])
 
 ########################################################################################################################
     def search_handler(self, data):

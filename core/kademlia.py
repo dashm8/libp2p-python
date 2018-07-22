@@ -1,6 +1,6 @@
 # this is gonna be ruff
 import hashlib
-from .networking.peer import PeerInfo 
+from networking.peer import PeerInfo 
 '''
         self.clients = clients#dict {id:(conn)}
         self.id = id

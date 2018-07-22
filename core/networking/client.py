@@ -7,7 +7,7 @@ from .peer import PeerInfo
 
 class Client:
 
-    def __init__(self, myid,ip="127.0.0.1", port=4444,enc):
+    def __init__(self, myid,enc,ip="127.0.0.1", port=4444):
         self.clients = {}  # dict {id:(PeerInfo,Conn_Handler)}
         self.id = myid
         self.ip = ip
@@ -25,7 +25,7 @@ class Client:
         del self.tasks[peer_id]
 
     def Connect(self, endpoint, peer_id,pubk=None,pubsig=None):
-        if peer_id in self.clients && self.clients[peer_id][1]:
+        if peer_id in self.clients and self.clients[peer_id][1]:
             return
         try:
             if peer_id in self.clients:

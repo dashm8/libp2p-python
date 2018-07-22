@@ -34,8 +34,8 @@ class RSA_ENC:
     @staticmethod
     def generate_keys():
         key = RSA.generate(4096,Random.new().read)
-        prvk = key.exportkey()
-        pubk = key.publickey().exportkey()
+        prvk = key.exportKey()
+        pubk = key.publickey().exportKey()
         return (prvk,pubk)
 
     @staticmethod
