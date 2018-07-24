@@ -9,9 +9,9 @@ from threading import Thread
 #sys.argv[2] = port
 
 enc = Encryption()
-clt = Client(sys.argv[1],enc)
+clt = Client(sys.argv[1])
 kad = kademlia.Router(10,clt)
-srv = ServerTcp('0.0.0.0',int(sys.argv[2]),kad,enc)
+srv = ServerTcp('0.0.0.0',int(sys.argv[2]),kad)
 t1 = Thread(target=srv.listen)
 t1.start()
 print("hello world")

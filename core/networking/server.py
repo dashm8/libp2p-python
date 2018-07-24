@@ -3,10 +3,11 @@ import socket
 from .utils import Formatter
 import threading
 from time import sleep
-
+from encryption import Encryption
+from swarm import Swarm
 
 class ServerTcp:
-    def __init__(self, ip, port, router,enc):
+    def __init__(self, ip, port, router):
         self.ip = ip
         self.port = port
         #init socket
@@ -19,7 +20,7 @@ class ServerTcp:
             "encrypted":self.encryption_handler}
         self.router = router        
         self.apps = {}
-        self.enc = enc
+        self.enc = Encryption()
         self.flag = True
 
     def listen(self):
@@ -40,6 +41,13 @@ class ServerTcp:
                 sleep(0.5)
             except Exception:
                 client.close()
+
+    def add_handlers(self,handlers):
+        self.handlers.update(handlers)
+
+    def stop(self):
+        #stops the server
+        self.flag = False
 
 
 ########################################################################################################################
@@ -98,8 +106,12 @@ class ServerTcp:
         if action == "store":
             self.router.recv_store(data)
 
-
-
+########################################################################################################################
+    def swarm_handler(self,data):
+        action = data["action"]
+        if action == "find_tracker":
+            s = Swarm(self.router.peer.id)
+            
 ########################################################################################################################
     def app_handler(self, data):
 

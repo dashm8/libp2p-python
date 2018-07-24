@@ -5,8 +5,16 @@ from Crypto.Hash import SHA ,SHA512
 from Crypto.PublicKey import RSA
 
 
-class Encryption:
-    def __init__(self):
+class Encryption(object):
+    _instance = None
+
+    def __new__(self):
+        if not self._instance:#singleton
+            self._instance = super(Encryption,self).__new__(self)
+            self.initkeys()
+        return self._instance 
+
+    def initkeys(self):
         self.prvsig,self.pubsig = ECDSA.generate_keypair_sign()
         self.prvkey,self.pubkey = RSA_ENC.generate_keys()
         
@@ -30,6 +38,29 @@ class Encryption:
             raise BrokenSigniture
 
 class RSA_ENC:
+
+    @staticmethod
+    def generate_keys():
+        key = RSA.generate(4096,Random.new().read)
+        prvk = key.exportKey()
+        pubk = key.publickey().exportKey()
+        return (prvk,pubk)
+
+    @staticmethod
+    def encrypt(key,massage):
+        hasher = SHA.new(massage.encode())
+        asym = RSA.importKey(key)
+        cipher = PKCS1_v1_5.new(asym)
+        return cipher.encrypt(massage.encode()+hasher.digest())
+
+    @staticmethod
+    def decrypt(key,ciphertext):
+        asym = RSA.importKey(key)
+        dsize = SHA.digest_size
+        sentinel = Random.new().read(15+dsize)
+        cipher = PKCS1_v1_5.new(asym)
+        massage = cipher.decrypt(ciphertext,sentinel)
+        return massageclass RSA_ENC:
 
     @staticmethod
     def generate_keys():

@@ -1,6 +1,7 @@
 # this is gonna be ruff
 import hashlib
 from networking.peer import PeerInfo 
+from swarm import Swarm
 '''
         self.clients = clients#dict {id:(conn)}
         self.id = id
@@ -151,6 +152,7 @@ class Router:
                 packet = {"datatype": "searchpeer", "action": "end", "searcher_id": data["searcher_id"],
                           "peer_id": data["peer_id"]}
                 self.peer.client.SendToPeer(data["searcher_id"], packet)
+                
     ####################################################################################################################
 
     def store(self,peer_id,endpoint):
@@ -174,7 +176,30 @@ class Router:
 
     ##################################################################################################################
         
+    def swarm_find_tracker(self,finfo):
+        peer = self.peer.closest_to_peer(finfo)
+        range_from_me = self.peer.get_range(finfo)
+        range_from_peer = Utils.get_range(peer,finfo)
+        if range_from_me < range_from_peer:    
+            s = Swarm(self.peer.id)
+            s.create_tracker(s.files[finfo].fstruct)            
+        else:
+            packet = {"datatype":"swarm","action":"find_tracker","finfo":finfo}
+            self.peer.client.SendToPeer(peer,packet)               
 
+    def swarm_find_tracker_red(self,finfo,source):
+        peer = self.peer.closest_to_peer(finfo)
+        range_from_me = self.peer.get_range(finfo)
+        range_from_peer = Utils.get_range(peer,finfo)
+        if range_from_me < range_from_peer:
+            packet = {"datatype":"swarm","action":"found_tracker"}
+            self.peer.client.SendToPeer(source,packet)
+            s = Swarm(self.peer.id)
+            s.create_tracker(None)
+        else:
+            packet = {"datatype":"swarm","action":"find_tracker_red","source":source}
+
+    ##################################################################################################################
 class Utils:
 
     @staticmethod
